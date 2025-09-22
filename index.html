@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pao Kicks — Step Up Your Game</title>
+
+  <!-- jsPDF for PDF receipts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Theme variables ---------- */
+    :root{
+      --bg:#07070a;
+      --panel:#0d1114;
+      --muted:#97a4ad;
+      --accent:#00e6a8;   /* neon green accent */
+      --accent-2:#ff6b6b; /* sale accent */
+      --glass: rgba(255,255,255,0.03);
+      --card-shadow: 0 12px 36px rgba(0,0,0,0.7);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{margin:0;font-family:Montserrat,system-ui,-apple-system,'Segoe UI',Roboto; background:linear-gradient(180deg,#050508,#0b0d10); color:#e9f2f7; -webkit-font-smoothing:antialiased;}
+    a{color:inherit;text-decoration:none}
+
+    /* ---------- Promo strip ---------- */
+    .promo-strip{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px 0;text-align:center;color:var(--muted);font-weight:700;letter-spacing:0.5px}
+    .promo-strip strong{color:var(--accent)}
+
+    /* ---------- Header ---------- */
+    header{position:sticky;top:0;z-index:9999;background:rgba(6,8,10,0.62);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .nav-wrap{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px}
+    .left-logo{display:flex;align-items:center;gap:14px;cursor:default}
+    /* big logo text */
+    .brand-mark{
+      width:84px;height:84px;border-radius:16px;
+      background:linear-gradient(135deg,var(--accent),#4fffd1);
+      display:flex;align-items:center;justify-content:center;color:#071217;font-weight:900;font-family:'Orbitron',sans-serif;
+      font-size:28px; box-shadow:0 12px 36px rgba(0,0,0,0.6); transform:skewX(-6deg);
+    }
+    .brand-text{display:flex;flex-direction:column}
+    .brand-text h1{font-family:'Orbitron',sans-serif;font-size:36px;margin:0;letter-spacing:1px;color:#fff;line-height:1}
+    .brand-text p{margin:2px 0 0;color:var(--muted);font-size:12px}
+    nav{display:flex;gap:12px;align-items:center}
+    nav a{padding:10px 12px;border-radius:8px;font-weight:700;color:var(--muted);font-size:14px}
+    nav a:hover{color:var(--accent)}
+    .menu-toggle{display:none;font-size:24px;cursor:pointer;color:var(--accent)}
+    .icons{display:flex;gap:10px;align-items:center}
+    .icon-btn{background:transparent;border:0;font-size:20px;cursor:pointer;position:relative;color:var(--muted)}
+    .count-bubble{position:absolute;top:-8px;right:-8px;background:var(--accent-2);color:#fff;border-radius:50%;padding:4px 7px;font-size:12px;font-weight:800}
+
+    /* ---------- Hero (wide + tall) ---------- */
+    .hero-wrap{max-width:1500px;margin:18px auto;padding:0 20px}
+    .hero{height:62vh; /* tall hero */ min-height:440px;border-radius:14px;overflow:hidden;position:relative;box-shadow:var(--card-shadow);background:#061018}
+    .hero .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .6s ease}
+    .hero .slide.show{opacity:1}
+    .hero .overlay{position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(180deg, rgba(2,4,6,0.20), rgba(2,4,6,0.6));display:flex;align-items:center;padding:40px}
+    .hero .content{max-width:820px;color:#fff}
+    .hero h2{font-family:'Orbitron',sans-serif;font-size:48px;margin:0 0 10px;line-height:1; text-shadow: 0 8px 30px rgba(0,0,0,0.7)}
+    .hero p{margin:0 0 18px;color:var(--muted);font-size:16px}
+    .hero .cta{background:var(--accent);color:#071217;padding:12px 18px;border-radius:12px;font-weight:900;border:0;cursor:pointer;box-shadow:0 8px 24px rgba(0,230,168,0.08)}
+    .hero .arrows{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}
+    .hero .arrow{background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;cursor:pointer;color:var(--muted);font-weight:800}
+    .hero .dots{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:flex;gap:8px}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.10);cursor:pointer}
+    .dot.active{background:var(--accent)}
+
+    /* ---------- Collections tiles ---------- */
+    .collections{max-width:1300px;margin:20px auto;padding:0 20px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    .col-tile{flex:1 1 220px;min-width:220px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));box-shadow:var(--card-shadow);cursor:pointer;display:flex;align-items:center;padding:14px;gap:12px}
+    .col-tile img{width:110px;height:92px;object-fit:cover;border-radius:8px;flex-shrink:0}
+    .col-tile h4{margin:0;font-size:18px}
+    .col-tile p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+    /* ---------- Featured / Products ---------- */
+    main{max-width:1300px;margin:18px auto;padding:0 20px 100px}
+    .section{margin-bottom:28px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+    .section-head h3{margin:0;color:#fff;font-size:20px}
+    .view-all{color:var(--muted);font-size:13px;background:transparent;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+
+    .product-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-shadow:var(--card-shadow);display:flex;flex-direction:column;transition:transform .16s}
+    .product-card:hover{transform:translateY(-6px)}
+    .product-media{height:180px;border-radius:10px;overflow:hidden;background:#071219;position:relative}
+    .product-media img{width:100%;height:100%;object-fit:cover;display:block}
+    .badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:8px;font-weight:800;font-size:12px;background:var(--accent);color:#071217}
+    .badge.sale{background:var(--accent-2);color:#fff}
+    .product-info{padding-top:10px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .product-info h4{margin:0;font-size:15px;color:#fff}
+    .price-row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+    .old-price{text-decoration:line-through;color:var(--muted);font-size:13px}
+    .price{color:var(--accent);font-weight:900;font-size:16px}
+    .add-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+    .add-btn{background:var(--accent);color:#071217;padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:900}
+    .quick-btn{padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);cursor:pointer}
+
+    /* ---------- Cart sidebar ---------- */
+    .cart-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9998;display:none}
+    .cart-sidebar{position:fixed;right:-460px;top:0;width:460px;height:100%;background:linear-gradient(180deg,#0f1417,#0b0d10);padding:18px;box-shadow:-20px 0 60px rgba(0,0,0,0.7);transition:right .28s;z-index:9999;overflow-y:auto}
+    .cart-sidebar.open{right:0}
+    .cart-header{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff}
+    .cart-close{cursor:pointer;background:transparent;border:0;color:var(--muted);font-size:18px}
+    .cart-item{display:flex;gap:10px;align-items:center;border-bottom:1px dashed rgba(255,255,255,0.03);padding:12px 0}
+    .cart-item img{width:72px;height:62px;object-fit:cover;border-radius:8px}
+    .cart-item-info{flex:1;color:var(--muted)}
+    .cart-footer{margin-top:12px;border-top:1px dashed rgba(255,255,255,0.03);padding-top:12px;color:#fff}
+    .cart-buttons{display:flex;gap:8px;margin-top:8px}
+    .cart-buttons button{flex:1;padding:12px;border-radius:8px;border:0;cursor:pointer}
+
+    /* ---------- Quick View modal ---------- */
+    .modal-backdrop{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:10000}
+    .modal-backdrop.show{display:flex}
+    .quick-modal{background:linear-gradient(180deg,#0f1417,#0b0d10);border-radius:12px;padding:18px;max-width:980px;width:96%;display:flex;gap:18px;color:#fff}
+    .quick-modal .left{flex:1;min-width:320px}
+    .quick-modal .left img{width:100%;height:460px;object-fit:cover;border-radius:10px}
+    .quick-modal .right{flex:1;display:flex;flex-direction:column;gap:10px}
+    .modal-close{cursor:pointer;padding:8px;border-radius:10px;border:0;background:rgba(255,255,255,0.03);color:var(--muted)}
+
+    /* ---------- Footer ---------- */
+    footer{padding:18px;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.03);margin-top:24px}
+
+    /* ---------- Responsive ---------- */
+    @media (max-width:1100px){
+      .brand-text h1{font-size:30px}
+      .hero h2{font-size:38px}
+      .modal-backdrop .quick-modal .left img{height:340px}
+      .cart-sidebar{width:100%;right:-100%}
+      .cart-sidebar.open{right:0}
+    }
+    @media (max-width:820px){
+      .menu-toggle{display:block}
+      nav{display:none;position:absolute;right:16px;top:112px;background:linear-gradient(180deg,#0b0d10,#0a0b0d);padding:12px;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.7)}
+      nav.show{display:flex;flex-direction:column;gap:8px}
+      .brand-mark{width:66px;height:66px;font-size:22px}
+      .brand-text h1{font-size:22px}
+      .hero{height:46vh;min-height:320px}
+      .hero .overlay{padding:20px}
+      .collections{flex-direction:column}
+      .product-media{height:150px}
+      .quick-modal{flex-direction:column;padding:12px}
+      .quick-modal .left img{height:220px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Promo -->
+  <div class="promo-strip">
+    <span><strong>FREE SHIPPING</strong> for orders over ₱4,999 • New drops weekly • Secure checkout</span>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-wrap">
+      <div class="left-logo">
+        <!-- sneaker-like SVG mark next to big text -->
+        <div class="brand-mark" aria-hidden="true">
+          <!-- small sneaker icon text: PK -->
+          PK
+        </div>
+        <div class="brand-text">
+          <h1>Pao Kicks</h1>
+          <p>Step Up Your Game — Street & Sport</p>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <nav id="main-nav">
+          <a href="#" onclick="showSection('home',event)">Home</a>
+          <a href="#" onclick="showSection('all',event)">All</a>
+          <a href="#" onclick="showSection('sneakers',event)">Sneakers</a>
+          <a href="#" onclick="showSection('basketball',event)">Basketball</a>
+          <a href="#" onclick="showSection('running',event)">Running</a>
+          <a href="#" onclick="showSection('casual',event)">Casual</a>
+          <a href="#" onclick="showSection('limited',event)">Limited</a>
+          <a href="#" onclick="showSection('reviews',event)">Reviews</a>
+          <a href="#" onclick="showSection('checkout-section',event)">Checkout</a>
+        </nav>
+
+        <div class="icons">
+          <button class="icon-btn" title="Account">👤</button>
+          <button class="icon-btn" title="Wishlist">🤍</button>
+          <button class="icon-btn" id="cart-button" onclick="toggleCart()" title="Cart">🛒
+            <span class="count-bubble" id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO slider -->
+  <div class="hero-wrap">
+    <div class="hero" id="hero">
+      <div class="slide show" style="background-image:url('https://img.businessoffashion.com/resizer/v2/DURAZZRFQJBYRJV2VHNXDTBWIM.jpg?auth=62a7f14c71763b8c8da3c31f55f546014cd409918bd2a270b45220bcbb606ddc&width=1440');" data-title="New Arrivals" data-sub="Fresh drops from top brands.">
+        <div class="overlay">
+          <div class="content">
+            <h2>New Arrivals • Fresh Drops</h2>
+            <p>Latest sneakers, exclusive collabs, and performance gear — delivered fast.</p>
+            <button class="cta" onclick="showSection('all')">Shop New</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" style="background-image:url('https://sizestores.s3.eu-west-1.amazonaws.com/wp-content/uploads/2014/04/NikeFree2014_Sum_detail.jpg');" data-title="Performance" data-sub="Run faster. Jump higher.">
+        <div class="overlay">
+          <div class="content">
+            <h2>Performance Running</h2>
+            <p>Lightweight designs and responsive cushioning for your best run.</p>
+            <button class="cta" onclick="showSection('running')">Shop Running</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" style="background-image:url('https://hips.hearstapps.com/esq.h-cdn.co/assets/17/35/1600x800/landscape-1504099087-lead-ajxxxii-rossa-scissors-tw-original.jpg?resize=640:*');" data-title="Limited" data-sub="Exclusive releases">
+        <div class="overlay">
+          <div class="content">
+            <h2>Limited Edition</h2>
+            <p>Rare collabs and premium drops — stock is limited.</p>
+            <button class="cta" onclick="showSection('limited')">View Limited</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrows">
+        <div class="arrow" onclick="heroPrev()">‹</div>
+        <div class="arrow" onclick="heroNext()">›</div>
+      </div>
+
+      <div class="dots" id="hero-dots"></div>
+    </div>
+  </div>
+
+  <!-- Collections tiles -->
+  <div class="collections">
+    <div class="col-tile" onclick="showSection('sneakers')">
+      <img src="https://down-ph.img.susercontent.com/file/sg-11134201-22120-869w7do6lnlv2f" alt="Sneakers">
+      <div>
+        <h4>Sneakers</h4>
+        <p>Street & lifestyle</p>
+      </div>
+    </div>
+    <div class="col-tile" onclick="showSection('basketball')">
+      <img src="https://images.stockx.com/images/Air-Jordan-Why-Not-5-Childhood-GS.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1668008044" alt="Basketball">
+      <div>
+        <h4>Basketball</h4>
+        <p>Court-ready performance</p>
+      </div>
+    </div>
+    <div class="col-tile" onclick="showSection('running')">
+      <img src="https://www.keypowersports.my/cdn/shop/files/womens-hoka-clifton-9-fuchsia-black-1_2048x_jpg.webp?v=1724333727" alt="Running">
+      <div>
+        <h4>Running</h4>
+        <p>Lightweight & cushioned</p>
+      </div>
+    </div>
+    <div class="col-tile" onclick="showSection('limited')">
+      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop" alt="Limited">
+      <div>
+        <h4>Limited</h4>
+        <p>Exclusive drops</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured and product sections -->
+  <main id="main">
+    <section class="section" id="featured-new">
+      <div class="section-head">
+        <h3>New Arrivals</h3>
+        <button class="view-all" onclick="showSection('all')">View All</button>
+      </div>
+      <div class="products-grid" id="featured-new-grid"></div>
+    </section>
+
+    <section class="section" id="featured-sale">
+      <div class="section-head">
+        <h3>On Sale</h3>
+        <button class="view-all" onclick="showSection('all')">View All</button>
+      </div>
+      <div class="products-grid" id="featured-sale-grid"></div>
+    </section>
+
+    <section class="section" id="featured-limited">
+      <div class="section-head">
+        <h3>Limited Edition</h3>
+        <button class="view-all" onclick="showSection('limited')">View Limited</button>
+      </div>
+      <div class="products-grid" id="featured-limited-grid"></div>
+    </section>
+
+    <!-- All / Category sections -->
+    <section id="all" style="display:none" class="section">
+      <div class="section-head">
+        <h3>All Products</h3>
+        <div>
+          <button class="view-all" onclick="sortAll('price-asc')">Price ↑</button>
+          <button class="view-all" onclick="sortAll('price-desc')">Price ↓</button>
+        </div>
+      </div>
+      <div class="products-grid" id="all-products"></div>
+    </section>
+
+    <section id="sneakers" style="display:none" class="section">
+      <div class="section-head"><h3>Sneakers</h3><button class="view-all" onclick="showSection('all')">View All</button></div>
+      <div class="products-grid" id="sneakers-grid"></div>
+    </section>
+
+    <section id="basketball" style="display:none" class="section">
+      <div class="section-head"><h3>Basketball</h3><button class="view-all" onclick="showSection('all')">View All</button></div>
+      <div class="products-grid" id="basketball-grid"></div>
+    </section>
+
+    <section id="running" style="display:none" class="section">
+      <div class="section-head"><h3>Running</h3><button class="view-all" onclick="showSection('all')">View All</button></div>
+      <div class="products-grid" id="running-grid"></div>
+    </section>
+
+    <section id="casual" style="display:none" class="section">
+      <div class="section-head"><h3>Casual</h3><button class="view-all" onclick="showSection('all')">View All</button></div>
+      <div class="products-grid" id="casual-grid"></div>
+    </section>
+
+    <section id="limited" style="display:none" class="section">
+      <div class="section-head"><h3>Limited Edition</h3><button class="view-all" onclick="showSection('all')">View All</button></div>
+      <div class="products-grid" id="limited-grid"></div>
+    </section>
+
+    <!-- Reviews & Checkout compact -->
+    <section id="reviews" style="display:none" class="section">
+      <div class="section-head"><h3>Customer Reviews</h3></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+        <form id="review-form" style="flex:1;min-width:280px;max-width:520px;background:var(--panel);padding:12px;border-radius:10px;box-shadow:var(--card-shadow)">
+          <div style="font-weight:800;margin-bottom:8px">Leave a review</div>
+          <input id="review-name" placeholder="Your name" required style="margin-bottom:8px;padding:8px;width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+          <select id="review-rating" required style="margin-bottom:8px;padding:8px;width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+            <option value="">Rating</option>
+            <option value="5">5 — Excellent</option>
+            <option value="4">4 — Very good</option>
+            <option value="3">3 — Good</option>
+            <option value="2">2 — Fair</option>
+            <option value="1">1 — Poor</option>
+          </select>
+          <textarea id="review-text" rows="3" placeholder="Your review" style="padding:8px;width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff"></textarea>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button type="submit" style="flex:1;padding:10px;border-radius:8px;border:0;background:var(--accent);color:#071217">Submit Review</button>
+            <button type="button" onclick="clearReviews()" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">Clear stored</button>
+          </div>
+        </form>
+
+        <div style="flex:2;min-width:280px">
+          <div id="reviews-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="checkout-section" style="display:none" class="section">
+      <div class="section-head"><h3>Checkout</h3></div>
+      <div class="checkout-wrap" id="checkout-wrap" style="background:var(--panel);padding:14px;border-radius:10px;box-shadow:var(--card-shadow)">
+        <form id="checkout-form" onsubmit="placeOrder(event)" class="form-grid" style="display:grid;gap:10px">
+          <input id="cust-name" placeholder="Full name" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+          <input id="cust-contact" placeholder="Contact number" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+          <input id="cust-email" placeholder="Email (optional)" type="email" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+          <input id="cust-address" placeholder="Delivery address" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+          <select id="cust-payment" required style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff">
+            <option value="">Select payment</option>
+            <option value="COD">Cash on Delivery</option>
+            <option value="GCash">GCash</option>
+            <option value="Card">Credit / Debit Card</option>
+          </select>
+          <textarea id="cust-message" rows="3" placeholder="Notes (optional)" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff"></textarea>
+
+          <div style="display:flex;gap:10px">
+            <button type="submit" style="flex:1;background:var(--accent);color:#071217;padding:12px;border-radius:8px;border:0">Place Order & Download Receipt</button>
+            <button type="button" onclick="cancelCheckout()" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:12px;border-radius:8px">Cancel</button>
+          </div>
+        </form>
+
+        <div id="order-summary" style="display:none;margin-top:12px;padding:10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.04)"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Cart sidebar -->
+  <div id="cart-overlay" class="cart-overlay" onclick="closeCart()"></div>
+  <aside id="cart-sidebar" class="cart-sidebar" aria-hidden="true">
+    <div class="cart-header">
+      <h4>Your Cart</h4>
+      <button class="cart-close" onclick="closeCart()">✖</button>
+    </div>
+
+    <div id="cart-list" style="margin-top:12px"></div>
+
+    <div class="cart-footer">
+      <div style="display:flex;justify-content:space-between;color:var(--muted);padding:6px 0"><span>Subtotal</span><span>₱<span id="cart-subtotal">0</span></span></div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);padding:6px 0"><span>Discount (10%)</span><span>-₱<span id="cart-discount">0</span></span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:900;padding:6px 0;color:#fff"><span>Total</span><span>₱<span id="cart-total">0</span></span></div>
+
+      <div class="cart-buttons">
+        <button onclick="showCheckout()" style="background:var(--accent);color:#071217">Checkout</button>
+        <button onclick="clearCart()" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Clear</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Quick view modal -->
+  <div id="quickViewModal" class="modal-backdrop" aria-hidden="true">
+    <div class="quick-modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
+      <div class="left">
+        <img id="modalImg" src="" alt="Product image">
+      </div>
+      <div class="right">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h3 id="modalName" style="margin:0">Product name</h3>
+            <div id="modalPrice" style="color:var(--accent);font-weight:900;margin-top:8px">₱0</div>
+          </div>
+          <button id="modalClose" class="modal-close">Close</button>
+        </div>
+
+        <p id="modalDesc" style="color:var(--muted);margin-top:12px">Description</p>
+
+        <label style="font-weight:800;margin-top:8px">Size</label>
+        <select id="modalSize" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;width:120px">
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9" selected>9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+        </select>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="modalAdd" class="add-btn">Add to Cart</button>
+          <button onclick="showSection('checkout-section'); document.getElementById('checkout-wrap').classList.add('active')" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © <span id="year"></span> Pao Kicks — Premium footwear • Local delivery
+  </footer>
+
+  <script>
+    // ---------- Utilities ----------
+    document.getElementById('year').textContent = new Date().getFullYear();
+    function toggleMenu(){ document.getElementById('main-nav').classList.toggle('show'); }
+
+    // ---------- Data (10 per category) ----------
+    const DATA = {
+      sneakers:[
+        {id:'s1',brand:'Nike',name:'Air Force 1',img:'https://cdn-images.farfetch-contents.com/19/30/28/51/19302851_42366110_600.jpg',price:6200,isNew:true},
+        {id:'s2',brand:'Adidas',name:'Gazelle',img:'https://assets.adidas.com/images/w_600,f_auto,q_auto/61f87dec481e4512823ea7fb0080ba1a_9366/Gazelle_Shoes_Black_BB5476_01_standard.jpg',price:4200},
+        {id:'s3',brand:'Converse',name:'Chuck Taylor',img:'https://www.capital.com.ph/cdn/shop/files/560250C-50Cb_9b687b6e-744c-4baa-a1d2-c10acacd15f2_800x.jpg?v=1720506623',price:2600,onSale:true},
+        {id:'s4',brand:'Vans',name:'Old Skool',img:'https://down-ph.img.susercontent.com/file/sg-11134201-22120-869w7do6lnlv2f',price:3800},
+        {id:'s5',brand:'Puma',name:'Suede Classic',img:'https://cdn-images.farfetch-contents.com/19/38/25/18/19382518_42587564_600.jpg',price:4800},
+        {id:'s6',brand:'New Balance',name:'574',img:'https://dynamic.zacdn.com/qhs5RrBiZ0e64wNVdbZ4duynfXw=/filters:quality(70):format(webp)/https://static-ph.zacdn.com/p/new-balance-6459-3877443-1.jpg',price:3300},
+        {id:'s7',brand:'Reebok',name:'Classic Leather',img:'https://cdn.shopify.com/s/files/1/0617/9690/9233/files/100209561_SLC_eCom_533x.jpg?v=1739344586',price:3500},
+        {id:'s8',brand:'On',name:'Cloud 5',img:'https://images.ctfassets.net/hnk2vsx53n6l/5frzyMiewk70RYFZXuwFx5/a6e7988b8d74a82b380538e14c37beed/kt3bm8jrpdssmycwwket.png?fm=webp',price:7200,isNew:true},
+        {id:'s9',brand:'Nike',name:'Kobe Bryant',img:'https://cdn.flightclub.com/TEMPLATE/471037/1.jpg',price:5100},
+        {id:'s10',brand:'Fila',name:'Disruptor',img:'https://cdn-images.farfetch-contents.com/16/52/69/25/16526925_32125996_600.jpg',price:4500,onSale:true}
+      ],
+      basketball:[
+        {id:'b1',brand:'Jordan',name:'Air Jordan 1',img:'https://cdn-images.farfetch-contents.com/14/28/63/00/14286300_20320838_600.jpg',price:9800,isLimited:true},
+        {id:'b2',brand:'Nike',name:'KD Trey 5',img:'https://www.zeus.ph/cdn/shop/files/DJ7554-007_01.jpg?v=1702708193',price:7200},
+        {id:'b3',brand:'Under Armour',name:'Curry Flow',img:'https://www.basketballstore.net/cdn/shop/products/3023085-701-curry-brand-curry-8-flow-like-watre-yellow-scarpa-basket3.jpg?v=1710856048',price:8400,onSale:true},
+        {id:'b4',brand:'Adidas',name:'Dame 7',img:'https://assets.adidas.com/images/w_600,f_auto,q_auto/c9472ebd66a54157ba37ad13004fe8d9_9366/Dame_7_EXTPLY_DAME_D.O.L.L.A._Shoes_Pink_GV9877_01_standard.jpg',price:5600},
+        {id:'b5',brand:'Puma',name:'Uproar',img:'https://www.tradeinn.com/f/13731/137319930_3/puma-uproar-hybrid-court-asg-fade-trainers.webp',price:6300},
+        {id:'b6',brand:'Puma',name:'MB.03',img:'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/309847/01/sv01/fnd/PHL/fmt/png/MB.03-Porsche-Legacy-Basketball-Shoes',price:7100},
+        {id:'b7',brand:'Anta',name:'KT Series',img:'https://antosports.com/cdn/shop/products/O1CN01NPAwij1KkYsrDd7j1__2143451202_jpg_Q75_jpg.webp?v=1680087508',price:5200},
+        {id:'b8',brand:'Li-Ning',name:'Way of Wade',img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfviAmWClzmNq1l7Qhv_bQZ-f5VHTsdEXbK4rSJ6boR56z74C9VaDnTzrRw7AlRzpp6lQ&usqp=CAU',price:7900},
+        {id:'b9',brand:'Nike',name:'Zoom Freak 5',img:'https://image.goat.com/375/attachments/product_template_pictures/images/091/127/765/original/DZ4485_600.png.png',price:6800},
+        {id:'b10',brand:'Jordan',name:'Why Not 5',img:'https://images.stockx.com/images/Air-Jordan-Why-Not-5-Childhood-GS.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1668008044',price:8600}
+      ],
+      running:[
+        {id:'r1',brand:'Nike',name:'Air Zoom Pegasus',img:'https://cdn.sneakers123.com/release/15348788/nike-air-zoom-pegasus-41-virginia-s-size-10-fz5151-800.jpg',price:7600,isNew:true},
+        {id:'r2',brand:'Adidas',name:'Ultraboost',img:'https://cdn.fleetfeet.com/productFull/products/HQ6351_1_FOOTWEAR_Photography_Side-Lateral-Center-View_white.jpg',price:8200},
+        {id:'r3',brand:'Asics',name:'Gel-Nimbus',img:'https://images.asics.com/is/image/asics/1203A543_020_SR_RT_GLB?$zoom$',price:6400},
+        {id:'r4',brand:'Brooks',name:'Ghost',img:'https://brooksrunning.com.ph/cdn/shop/files/BB458_6.jpg?v=1754985162',price:7000},
+        {id:'r5',brand:'Hoka',name:'Clifton',img:'https://www.keypowersports.my/cdn/shop/files/womens-hoka-clifton-9-fuchsia-black-1_2048x_jpg.webp?v=1724333727',price:9400},
+        {id:'r6',brand:'Saucony',name:'Ride',img:'https://s7d4.scene7.com/is/image/WolverineWorldWide/S20924-112_1?$dw-pdp-mobile$',price:5800},
+        {id:'r7',brand:'New Balance',name:'FuelCell',img:'https://johnbuckleysports.com/wp-content/uploads/2024/08/wrcxlw4_nb_02_i.webp',price:7700},
+        {id:'r8',brand:'Mizuno',name:'Wave Rider',img:'https://static.qns.digital/img/p/3/1/0/0/1/1/7/3100117-full_product.jpg',price:6900},
+        {id:'r9',brand:'Salomon',name:'Sonic',img:'https://cdn-www.sportokay.com/media/catalog/product/cache/5/image/1022x1131/9df78eab33525d08d6e5fb8d27136e95/c/a/cartware_3dpicture_JmMRe2.jpg',price:8800},
+        {id:'r10',brand:'On',name:'Cloudflow',img:'https://images.ctfassets.net/hnk2vsx53n6l/7pJIAutB1TwZh1urab1XOa/fb2f9bcb93fcaaf5aea0164583497913/zcspaofryvewk7v1k5hq.png?fm=webp',price:7200}
+      ],
+      casual:[
+        {id:'c1',brand:'Clarks',name:'Desert Boot',img:'https://clarks.my/cdn/shop/products/26176626_4.jpg?v=1752565298&width=1080',price:3500},
+        {id:'c2',brand:'Toms',name:'Slip-On',img:'https://dynamic.zacdn.com/ELzGMVI7KDSEPZMZ0YnI2QPqCQ4=/filters:quality(70):format(webp)/https://static-sg.zacdn.com/p/toms-0526-5733353-3.jpg',price:2700},
+        {id:'c3',brand:'Skechers',name:'Relaxed Fit',img:'https://images.skechers.com/image;width=400%2Cformat=auto/200217_BLK_HERO_LG',price:3200},
+        {id:'c4',brand:'Cole Haan',name:'GrandPro',img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR19gh46K0f4ddrn496iOka5IMtWG2fWjoDfg&s',price:4200},
+        {id:'c5',brand:'Vionic',name:'Francisco Fillmore',img:'https://vionicshoes.com.ph/cdn/shop/files/FILLMORE-01_FRANCISCOFILLMORE_BLACKWeb_1_1200x.jpg?v=1757298438',price:2900},
+        {id:'c6',brand:'Vionic',name:'Walker',img:'https://vionicshoes.ca/cdn/shop/products/WALKER-STONE.jpg?v=1643663888',price:3100},
+        {id:'c7',brand:'Nike',name:'Speedcat Metallic',img:'https://www.footlocker.ph/media/catalog/product/0/8/0803-PMX403689-0200509H-1.jpg?width=300&height=300&quality=80&fit=cover',price:2100},
+        {id:'c8',brand:'Sperry',name:'Boat Shoe',img:'https://ph-live-01.slatic.net/p/bd027c813bec172c931fd235a54c74da.jpg',price:3800},
+        {id:'c9',brand:'Blundstone',name:'Chelsea',img:'https://cdni.llbean.net/is/image/wim/525173_530_41?hei=1095&wid=950&resMode=sharp2&defaultImage=llbprod/525173_530_41',price:5200},
+        {id:'c10',brand:'Tretorn',name:'Nylite',img:'https://www.hisknibs.com/wp-content/uploads/2019/08/tretorn1.jpg',price:2600}
+      ],
+      limited:[
+        {id:'l1',brand:'Nike SB',name:'Dunk Low Collab',img:'https://static.nike.com/a/images/w_1280,q_auto,f_auto/4359b443-975f-4f74-9ba4-304ffe61e8f8/nike-sb-dunk-low-pro-big-money-savings-fz3129-200-release-date.jpg',price:22000,isLimited:true},
+        {id:'l2',brand:'Jordan',name:'Retro OG',img:'https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f0df216b-bc6b-43d2-b052-690f87d8bcd9/AIR+JORDAN+1+RETRO+HIGH+OG.png',price:18500,isLimited:true},
+        {id:'l3',brand:'Adidas',name:'Yeezy Prototype',img:'https://images.laced.com/products/f54e647f-dde6-451d-b9f0-bf74fe96c2b8.png?auto=format&fit=max&w=3840&q=75',price:24000,isLimited:true},
+        {id:'l4',brand:'Nike',name:'Air Max 1 OG',img:'https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ1ZNSWBlX2E9X8G-pqg2haZ-nkxA2NqTYnrKAFhjcA_8U9VZkjtWkCtNNkhqR8XiBJ8OLPzDwHmKhuXvlcuoIRxL9bWvB8_McUlFpJs_X6biLkPxAyGb4rqhs',price:17200},
+        {id:'l5',brand:'ASICS',name:'Gel-Limited',img:'https://cdn.sportshop.com/catalog/product/1500/1500/2/1/216547_1.jpg?v=c17dd28d32584c13',price:16200}
+      ]
+    };
+
+    // ---------- Helpers ----------
+    function formatPrice(n){ return n.toLocaleString(); }
+    function calcSale(price){ return Math.round(price * 0.9); } // 10% off
+
+    function findItemById(id){
+      for(const k in DATA) {
+        const found = DATA[k].find(d => d.id === id);
+        if(found) return found;
+      }
+      return null;
+    }
+
+    // ---------- Create product card ----------
+    function createProductCard(item){
+      const div = document.createElement('article');
+      div.className = 'product-card';
+      const badges = [];
+      if(item.isNew) badges.push(`<span class="badge">NEW</span>`);
+      if(item.onSale) badges.push(`<span class="badge sale">SALE</span>`);
+      if(item.isLimited) badges.push(`<span class="badge">LIMITED</span>`);
+      div.innerHTML = `
+        <div class="product-media">
+          ${badges.join('')}
+          <img src="${item.img}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/1400x900?text=No+Image'">
+        </div>
+        <div class="product-info">
+          <h4>${item.brand} — ${item.name}</h4>
+          <div class="price-row">
+            <div>
+              <div class="old-price">₱${formatPrice(item.price)}</div>
+              <div class="price">₱${formatPrice(item.onSale ? calcSale(item.price) : calcSale(item.price))} <span class="sale-badge">${item.onSale ? '-10%' : ''}</span></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:12px;color:var(--muted)">${item.isLimited ? 'Limited' : 'Ships same day'}</div>
+            </div>
+          </div>
+          <div class="add-row">
+            <button class="add-btn" onclick="openQuickView('${item.id}')">Quick View</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="quick-btn" onclick="addToCart('${item.id}',{size:'9'})">Add (Size 9)</button>
+            </div>
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function populateGrid(gridId, items){
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = '';
+      items.forEach(it => grid.appendChild(createProductCard(it)));
+    }
+
+    // populate categories
+    populateGrid('sneakers-grid', DATA.sneakers);
+    populateGrid('basketball-grid', DATA.basketball);
+    populateGrid('running-grid', DATA.running);
+    populateGrid('casual-grid', DATA.casual);
+    populateGrid('limited-grid', DATA.limited);
+
+    // featured: new, sale, limited
+    function populateFeatured(){
+      const newest = [].concat(DATA.sneakers, DATA.running, DATA.limited).filter(i=>i.isNew).slice(0,6);
+      const fill = [].concat(DATA.sneakers, DATA.running, DATA.limited).slice(0,6-newest.length);
+      populateGrid('featured-new-grid', newest.concat(fill).slice(0,6));
+
+      const sales = [].concat(DATA.sneakers, DATA.basketball, DATA.limited).filter(i=>i.onSale);
+      const salesAdd = [].concat(DATA.sneakers, DATA.basketball).slice(0, Math.max(0,6-sales.length));
+      populateGrid('featured-sale-grid', sales.concat(salesAdd).slice(0,6));
+
+      const limited = [].concat(DATA.limited).filter(i=>i.isLimited);
+      populateGrid('featured-limited-grid', limited.slice(0,6));
+    }
+    populateFeatured();
+
+    // all products
+    function showAllProducts(){
+      const all = [].concat(DATA.sneakers, DATA.basketball, DATA.running, DATA.casual, DATA.limited);
+      populateGrid('all-products', all);
+    }
+
+    // ---------- sections ----------
+    function hideAllSections(){ document.querySelectorAll('main section').forEach(s=> s.style.display='none'); }
+    function showSection(id, e){
+      if(e) e.preventDefault();
+      hideAllSections();
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'block';
+      if(id === 'all') showAllProducts();
+      document.getElementById('main-nav').classList.remove('show');
+      window.scrollTo({top:120,behavior:'smooth'});
+    }
+    // start homepage: show featured sections
+    hideAllSections();
+    document.getElementById('featured-new').style.display = 'block';
+    document.getElementById('featured-sale').style.display = 'block';
+    document.getElementById('featured-limited').style.display = 'block';
+
+    // ---------- Reviews (localStorage) ----------
+    const REVIEWS_KEY = 'paokicks_reviews_v3';
+    const fakeReviews = [
+      {stars:5,text:"Shoes are fire — great fit and quick delivery!",name:"Sapio",date:Date.now()},
+      {stars:5,text:"Top quality and excellent service.",name:"Maria Hiwaga",date:Date.now()-86400000},
+      {stars:4,text:"Nice selection and fair prices.",name:"Silapo Bisaya",date:Date.now()-3600000}
+    ];
+    function loadReviews(){ const s=localStorage.getItem(REVIEWS_KEY); if(s) return JSON.parse(s); localStorage.setItem(REVIEWS_KEY, JSON.stringify(fakeReviews)); return fakeReviews.slice(); }
+    function saveReviews(arr){ localStorage.setItem(REVIEWS_KEY, JSON.stringify(arr)); }
+    function renderReviews(){ const arr=loadReviews(); const grid=document.getElementById('reviews-grid'); grid.innerHTML=''; arr.slice().reverse().forEach(r=>{ const d=new Date(r.date); const el=document.createElement('div'); el.style.background='var(--panel)'; el.style.padding='12px'; el.style.borderRadius='10px'; el.style.marginBottom='10px'; el.innerHTML=`<div style="color:var(--accent);font-weight:800">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div><div style="color:var(--muted)">${r.text}</div><div style="margin-top:8px;font-weight:700">${r.name} <span style="font-weight:400;color:var(--muted);font-size:12px"> — ${d.toLocaleDateString()}</span></div>`; grid.appendChild(el); }); }
+    document.getElementById('review-form').addEventListener('submit', function(e){ e.preventDefault(); const name=document.getElementById('review-name').value.trim(); const rating=parseInt(document.getElementById('review-rating').value); const text=document.getElementById('review-text').value.trim(); if(!name||!rating||!text){ alert('Please fill all fields'); return; } const arr=loadReviews(); arr.push({name,stars:rating,text,date:Date.now()}); saveReviews(arr); renderReviews(); this.reset(); showSection('reviews'); alert('Thanks — review saved.'); });
+    function clearReviews(){ localStorage.removeItem(REVIEWS_KEY); renderReviews(); alert('Reviews cleared'); }
+    renderReviews();
+
+    // ---------- CART ----------
+    let CART = [];
+    function addToCart(id, opts={}){ const size=opts.size||'N/A'; const existing=CART.find(i=>i.id===id && i.size===size); if(existing) existing.qty++; else CART.push({id,qty:1,size}); renderCart(); openCart(); }
+    function changeQty(id, delta, size){ const it=CART.find(i=>i.id===id && i.size===size); if(!it) return; it.qty+=delta; if(it.qty<1) CART=CART.filter(x=>!(x.id===id&&x.size===size)); renderCart(); }
+    function removeFromCart(id,size){ CART=CART.filter(i=>!(i.id===id&&i.size===size)); renderCart(); }
+    function clearCart(){ CART=[]; renderCart(); }
+    function getCartTotals(){ let subtotal=0; CART.forEach(ci=>{ const p=findItemById(ci.id); subtotal += p.price * ci.qty; }); const discount = Math.round(subtotal*0.10); const total = subtotal - discount; return {subtotal,discount,total}; }
+
+    function renderCart(){ const list = document.getElementById('cart-list'); list.innerHTML=''; if(CART.length===0){ list.innerHTML = '<div style="color:var(--muted);padding:12px">Your cart is empty.</div>'; } else { CART.forEach(ci=>{ const p=findItemById(ci.id); const disc = calcSale(p.price); const el=document.createElement('div'); el.className='cart-item'; el.innerHTML = `<img src="${p.img}" onerror="this.src='https://via.placeholder.com/400?text=No+Image'"><div class="cart-item-info"><div style="font-weight:800;color:#fff">${p.brand} — ${p.name}</div><div style="color:var(--muted)">Size: ${ci.size} • ₱${formatPrice(disc)} × ${ci.qty}</div></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><div style="display:flex;gap:6px"><button onclick="changeQty('${ci.id}',-1,'${ci.size}')">-</button><div style="min-width:24px;text-align:center">${ci.qty}</div><button onclick="changeQty('${ci.id}',1,'${ci.size}')">+</button></div><button style="background:transparent;border:0;color:var(--accent-2);cursor:pointer" onclick="removeFromCart('${ci.id}','${ci.size}')">Remove</button></div>`; list.appendChild(el); }); } const totals=getCartTotals(); document.getElementById('cart-subtotal').textContent = formatPrice(totals.subtotal); document.getElementById('cart-discount').textContent = formatPrice(totals.discount); document.getElementById('cart-total').textContent = formatPrice(totals.total); document.getElementById('cart-count').textContent = CART.reduce((s,i)=>s+i.qty,0); }
+
+    function openCart(){ document.getElementById('cart-sidebar').classList.add('open'); document.getElementById('cart-overlay').style.display='block'; }
+    function closeCart(){ document.getElementById('cart-sidebar').classList.remove('open'); document.getElementById('cart-overlay').style.display='none'; }
+    function toggleCart(){ const sb=document.getElementById('cart-sidebar'); if(sb.classList.contains('open')) closeCart(); else openCart(); }
+
+    // expose for inline handlers
+    window.addToCart = addToCart;
+    window.toggleCart = toggleCart;
+    window.showSection = showSection;
+
+    // ---------- Quick View ----------
+    const quickModal = document.getElementById('quickViewModal');
+    const modalImg = document.getElementById('modalImg');
+    const modalName = document.getElementById('modalName');
+    const modalPrice = document.getElementById('modalPrice');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalSize = document.getElementById('modalSize');
+    const modalAdd = document.getElementById('modalAdd');
+    const modalClose = document.getElementById('modalClose');
+    let currentQuickProductId = null;
+
+    function openQuickView(id){
+      const p = findItemById(id);
+      if(!p) return;
+      currentQuickProductId = id;
+      modalImg.src = p.img;
+      modalName.textContent = `${p.brand} — ${p.name}`;
+      modalPrice.textContent = "₱" + formatPrice(calcSale(p.price));
+      modalDesc.textContent = `Original ₱${formatPrice(p.price)} • ${p.isLimited ? 'Limited release • Act fast' : 'Ships same day'}`;
+      quickModal.classList.add('show');
+      quickModal.setAttribute('aria-hidden','false');
+    }
+
+    modalClose.onclick = function(){ quickModal.classList.remove('show'); quickModal.setAttribute('aria-hidden','true'); };
+    document.getElementById('quickViewModal').addEventListener('click', function(e){ if(e.target === this){ quickModal.classList.remove('show'); quickModal.setAttribute('aria-hidden','true'); } });
+
+    modalAdd.onclick = function(){
+      if(!currentQuickProductId) return;
+      const sizeVal = modalSize.value || 'N/A';
+      addToCart(currentQuickProductId, {size: sizeVal});
+      quickModal.classList.remove('show'); quickModal.setAttribute('aria-hidden','true');
+    };
+
+    // ---------- Checkout + PDF ----------
+    function showCheckout(){
+      if(CART.length === 0){ alert('Your cart is empty'); return; }
+      showSection('checkout-section');
+      document.getElementById('checkout-wrap').classList.add('active');
+      const totals = getCartTotals();
+      const summaryEl = document.getElementById('order-summary');
+      summaryEl.style.display='block';
+      let html=`<strong>Items:</strong><br>`;
+      CART.forEach(ci=>{
+        const p=findItemById(ci.id);
+        html += `${p.brand} — ${p.name} (Size ${ci.size}) — ₱${formatPrice(calcSale(p.price))} x ${ci.qty} = ₱${formatPrice(calcSale(p.price)*ci.qty)}<br>`;
+      });
+      html += `<hr><strong>Total: ₱${formatPrice(totals.total)}</strong>`;
+      summaryEl.innerHTML = html;
+    }
+
+    function cancelCheckout(){ document.getElementById('checkout-wrap').classList.remove('active'); showSection('all'); }
+
+    async function placeOrder(e){
+      e.preventDefault();
+      if(CART.length===0){ alert('Cart empty'); return; }
+      const name=document.getElementById('cust-name').value.trim();
+      const contact=document.getElementById('cust-contact').value.trim();
+      const email=document.getElementById('cust-email').value.trim();
+      const address=document.getElementById('cust-address').value.trim();
+      const payment=document.getElementById('cust-payment').value;
+      const notes=document.getElementById('cust-message').value.trim();
+      if(!name||!contact||!address||!payment){ alert('Please fill required fields'); return; }
+
+      const totals = getCartTotals();
+      let html=`<strong>Customer</strong><br>Name: ${name}<br>Contact: ${contact}<br>Email: ${email||'N/A'}<br>Address: ${address}<br>Payment: ${payment}<br>Notes: ${notes||'N/A'}<hr><strong>Items</strong><br>`;
+      CART.forEach(ci=>{ const p=findItemById(ci.id); html += `${p.brand} — ${p.name} (Size ${ci.size}) — ₱${formatPrice(calcSale(p.price))} x ${ci.qty} = ₱${formatPrice(calcSale(p.price)*ci.qty)}<br>`; });
+      html += `<hr><strong>Total: ₱${formatPrice(totals.total)}</strong>`;
+      const summaryEl = document.getElementById('order-summary'); summaryEl.innerHTML = html; summaryEl.style.display='block';
+
+      // Generate PDF receipt
+      try{
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({unit:'pt',format:'a4'});
+        doc.setDrawColor(24,24,24);
+        doc.setLineWidth(1);
+        doc.rect(36,36, 523,760);
+
+        // watermark
+        try {
+          if(doc && doc.setGState){
+            const g = new doc.GState({opacity:0.04});
+            doc.setGState(g);
+            doc.setFontSize(48);
+            doc.setTextColor(200,200,200);
+            doc.text("Pao Kicks", 120, 420, {angle:35});
+            doc.setGState(new doc.GState({opacity:1}));
+          } else {
+            doc.setFontSize(36);
+            doc.setTextColor(200,200,200);
+            doc.text("Pao Kicks", 120, 420, {angle:35});
+            doc.setTextColor(0,0,0);
+          }
+        } catch(e){}
+
+        doc.setFontSize(16); doc.setFont('helvetica','bold');
+        doc.text("Pao Kicks - Order Receipt", 48, 90);
+        doc.setLineWidth(0.8);
+        doc.line(48,96,520,96);
+
+        doc.setFontSize(11); doc.setFont('helvetica','normal');
+        let y=120;
+        doc.text(`Name: ${name}`,48,y); y+=16;
+        doc.text(`Contact: ${contact}`,48,y); y+=16;
+        doc.text(`Email: ${email||'N/A'}`,48,y); y+=16;
+        doc.text(`Address: ${address}`,48,y); y+=20;
+        doc.text(`Payment: ${payment}`,48,y); y+=20;
+        if(notes){ doc.text(`Notes: ${notes}`,48,y); y+=20; }
+
+        doc.setFont('helvetica','bold'); doc.text('Items:',48,y); y+=14;
+        doc.setFont('helvetica','normal');
+        CART.forEach(ci=>{
+          const p=findItemById(ci.id);
+          const line = `${p.brand} — ${p.name} (Size ${ci.size}) x${ci.qty} — ₱${formatPrice(calcSale(p.price)*ci.qty)}`;
+          doc.text(line,48,y); y+=14;
+          if(y > 720){ doc.addPage(); y = 48; }
+        });
+
+        y+=10; doc.setFont('helvetica','bold'); doc.text(`TOTAL: ₱${formatPrice(totals.total)}`,48,y);
+
+        doc.setFontSize(12); doc.setFont('helvetica','italic'); doc.setTextColor(255,120,120);
+        doc.text("Thank you for shopping with Pao Kicks!",48,y+40);
+        doc.setTextColor(0,0,0);
+
+        const fileName = `PaoKicks_Order_${Date.now()}.pdf`;
+        doc.save(fileName);
+      } catch(err){
+        console.error('PDF error', err);
+        alert('Order placed but PDF receipt could not be generated. Check console.');
+      }
+
+      // finalize
+      CART = []; renderCart();
+      document.getElementById('checkout-form').reset();
+      alert('Order placed — receipt downloaded (if allowed).');
+    }
+
+    // ---------- Sorting for All ----------
+    function sortAll(mode){
+      const all = [].concat(DATA.sneakers, DATA.basketball, DATA.running, DATA.casual, DATA.limited);
+      if(mode === 'price-asc') all.sort((a,b)=>calcSale(a.price)-calcSale(b.price));
+      else if(mode === 'price-desc') all.sort((a,b)=>calcSale(b.price)-calcSale(a.price));
+      populateGrid('all-products', all);
+    }
+
+    // ---------- Hero slider ----------
+    const slides = Array.from(document.querySelectorAll('.hero .slide'));
+    const dotsWrap = document.getElementById('hero-dots');
+    let heroIndex = 0;
+    slides.forEach((s,i)=>{ const d=document.createElement('div'); d.className='dot'; if(i===0) d.classList.add('active'); d.onclick = ()=>{ showSlide(i); resetHeroTimer(); }; dotsWrap.appendChild(d); });
+    function showSlide(i){ slides.forEach((s,idx)=> s.classList.toggle('show', idx===i)); Array.from(dotsWrap.children).forEach((d,idx)=> d.classList.toggle('active', idx===i)); heroIndex = i; }
+    function heroNext(){ showSlide((heroIndex+1) % slides.length); }
+    function heroPrev(){ showSlide((heroIndex-1+slides.length) % slides.length); }
+    let heroTimer = setInterval(heroNext, 5000);
+    function resetHeroTimer(){ clearInterval(heroTimer); heroTimer = setInterval(heroNext, 5000); }
+
+    // ---------- Initial render ----------
+    showAllProducts();
+    renderCart();
+  </script>
+</body>
+</html>
